@@ -9,9 +9,7 @@ export default function Home() {
   
   return (
     <Page>
-      <div className={styles.center}>
-      HOME
-        </div>
+      <div className={styles.center}></div>
     </Page>
   )
 }
