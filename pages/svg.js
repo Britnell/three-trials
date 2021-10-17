@@ -93,27 +93,50 @@ class Three extends Component {
 
         // * ---------------- Objects
         const loader = new SVGLoader()
-
+        
         async function loadSVG(){
             const data = await loader.loadAsync('/test1.svg')
             const path = data.paths[0]  
             const svgShape = SVGLoader.createShapes(path)[0]
-            // const geo = new THREE.ShapeGeometry( svgShape );
-            const geo = new THREE.ExtrudeGeometry(svgShape,{
-                steps: 2,      depth: 5,    
-                bevelEnabled: true,
-                bevelThickness: 1,   // how deep
-                bevelSize:  1,       // shape fatter
-                bevelOffset:  1,     // dist from outl starts
-                bevelSegments: 1,
-            })
-            const svgMesh = new THREE.Mesh(geo, matt )
-            svgMesh.position.y = -30
-            svgMesh.position.z = 0
-            svgMesh.castShadow = true
-            svgMesh.receiveShadow = true
-            scene.add(svgMesh)
+
+            // shape geo
+            const shapeGeo = new THREE.Mesh(
+                new THREE.ShapeGeometry( svgShape )
+                , matt )
+            shapeGeo.position.set(-80, 20, 1)
+            shapeGeo.castShadow = true
+            scene.add(shapeGeo)
+
+            // extrude
+            const extrude = new THREE.ExtrudeGeometry(svgShape,{  depth: 3,    bevelEnabled: false,  })
+            const exGeo = new THREE.Mesh(extrude, matt )
+            exGeo.position.set(-20, 20, 1)
+            exGeo.castShadow = true
+            scene.add(exGeo)
             sceneRender()
+            
+            // line shape
+            const svgPoints = svgShape.getPoints()
+            const pointGeo = new THREE.BufferGeometry().setFromPoints(svgPoints)
+            const shapeLine = new THREE.Line(pointGeo,new THREE.LineBasicMaterial({ color: 0xf0a0c0, }))
+            shapeLine.position.set(40, 20, 1)
+            scene.add(shapeLine)
+            
+            // line extrude 
+            let w = 2
+            const trig = new THREE.Shape([ [0,0],[w,w],[-w,w] ].map(p=>new THREE.Vector2(...p) ))
+            const svg3D = svgPoints.map(v=> new THREE.Vector3(v.x,v.y,0) )
+            const exPath = new THREE.CatmullRomCurve3(svg3D)
+
+            const lineGeo = new THREE.ExtrudeGeometry(trig,{    
+                steps: 200,     extrudePath: exPath,
+            })
+            const lineMesh = new THREE.Mesh(lineGeo,matt)
+            lineMesh.position.set(0,-60,1)
+            scene.add(lineMesh)
+            
+            sceneRender()
+
             // Eo loader
         }
         loadSVG()
